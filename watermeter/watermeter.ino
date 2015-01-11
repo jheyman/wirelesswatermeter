@@ -15,6 +15,7 @@ int previousvalue;
 int currentstate=SILVER;
 
 long nbTurns=0;
+//long sendIndex=0;
 
 #define HIGH_THRESHOLD 60
 #define LOW_THRESHOLD  30
@@ -60,7 +61,7 @@ void loop(){
     //Serial.println(nbTurns);   
     
     // prepare data for sending as text
-    sprintf(message, "ONE MORE TURN %d", nbTurns);
+    sprintf(message, "water:top:%d", nbTurns);
   
     // send data over wireless link
     radio.stopListening();
@@ -69,13 +70,15 @@ void loop(){
   } 
 
     // prepare data for sending as text
-    sprintf(message, "value %d", value);
+    //sprintf(message, "value %d, idx %d", value, sendIndex);
   
     // send data over wireless link
-    radio.stopListening();
-    bool ok = radio.write(&message,strlen(message));
-    radio.startListening(); 
+    //radio.stopListening();
+    //bool ok = radio.write(&message,strlen(message));
+    //radio.startListening(); 
 
+  //sendIndex++;
+  
   // Loop at 10 Hz
   previousvalue = value;
   delay(100);
