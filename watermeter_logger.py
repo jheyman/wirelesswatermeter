@@ -13,6 +13,7 @@ import pytz
 import RPi.GPIO as GPIO
 from datetime import datetime, timedelta
 from ConfigParser import SafeConfigParser
+from apscheduler.schedulers.background import BackgroundScheduler
 
 ###########################
 # PERSONAL CONFIG FILE READ
@@ -27,6 +28,8 @@ LOG_FILENAME = parser.get('config', 'log_filename')
 #################
 #  LOGGING SETUP
 #################
+logging.basicConfig()
+
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 
 # Configure logging to log to a file, making a new file at midnight and keeping the last 3 day's data
@@ -35,7 +38,8 @@ logger = logging.getLogger(__name__)
 # Set the log level to LOG_LEVEL
 logger.setLevel(LOG_LEVEL)
 # Make a handler that writes to a file, making a new file at midnight and keeping 3 backups
-handler = logging.handlers.TimedRotatingFileHandler(LOG_FILENAME, when="midnight", backupCount=3)
+#handler = logging.handlers.TimedRotatingFileHandler(LOG_FILENAME, when="midnight", backupCount=3)
+handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1000000, backupCount=5)
 # Format each log message like this
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 # Attach the formatter to the handler
@@ -84,29 +88,44 @@ radio.startListening()
 #radio.startListening()
 
 old_counter_value = -1
+total_in_period = 0
 
-while True:
-    pipe = [0]
-    while not radio.available(pipe, True):
-        time.sleep(1000/1000000.0)
-    recv_buffer = []
-    radio.read(recv_buffer)
-    out = ''.join(chr(i) for i in recv_buffer)
-    #print out
-    params = out.split(":")
-    sensor = params[0]
-    message = params[1]
-    value = params[2].strip('\x00')
-    #logger.info('Received: %s' % params)
-    if (sensor == "water" and message == "top"):
-	    current_val = int(value)
-	    if (old_counter_value == -1):
-	    	old_counter_value = current_val
-	    else:
-	    	delta = current_val - old_counter_value
-	    	if (delta > 1):
-	    		logger.info('MISSED tops (delta=%d)' % delta)
-	    	logger.info('%d more liters' % delta)
-	    	old_counter_value = current_val
+def log_value():
+	global total_in_period
+	logger.info('nb liters in last period: %d' % total_in_period)
+	total_in_period = 0
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(log_value, 'interval', seconds=300)
+scheduler.start()
+
+try:
+	while True:
+	    pipe = [0]
+	    while not radio.available(pipe, True):
+		time.sleep(0.333)
+	    recv_buffer = []
+	    radio.read(recv_buffer)
+	    out = ''.join(chr(i) for i in recv_buffer)
+	    #print out
+	    params = out.split(":")
+	    sensor = params[0]
+	    message = params[1]
+	    value = params[2].strip('\x00')
+	    #logger.info('Received: %s' % params)
+	    if (sensor == "water" and message == "top"):
+		    current_val = int(value)
+		    if (old_counter_value == -1):
+		    	old_counter_value = current_val
+		    else:
+		    	delta = current_val - old_counter_value
+		    	if (delta > 1):
+		    		logger.info('MISSED tops (delta=%d)' % delta)
+		    	#logger.info('%d more liters' % delta)
+		    	total_in_period += delta
+		    	old_counter_value = current_val
+
+except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+	logger.info('EXITING watermeter logger')
 
