@@ -97,6 +97,8 @@ def log_value():
 	logger.info('nb liters in last period: %d' % total_in_period)
 	total_in_period = 0
 
+logger.info("log period: %d seconds", LOG_PERIOD)
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(log_value, 'interval', seconds=LOG_PERIOD)
 scheduler.start()
