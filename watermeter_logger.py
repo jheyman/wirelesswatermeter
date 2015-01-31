@@ -25,6 +25,8 @@ parser.read('watermeter_logger.ini')
 # Read path to log file
 LOG_FILENAME = parser.get('config', 'log_filename')
 
+LOG_PERIOD = parser.getint('config', 'log_period')
+
 #################
 #  LOGGING SETUP
 #################
@@ -96,7 +98,7 @@ def log_value():
 	total_in_period = 0
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(log_value, 'interval', seconds=300)
+scheduler.add_job(log_value, 'interval', seconds=LOG_PERIOD)
 scheduler.start()
 
 try:
