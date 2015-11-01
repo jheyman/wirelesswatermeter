@@ -15,6 +15,21 @@ from datetime import datetime, timedelta
 from ConfigParser import SafeConfigParser
 from apscheduler.schedulers.background import BackgroundScheduler
 
+import urllib
+import urllib2
+
+remote_log_url = 'http://192.168.0.13:8081/graphlist_insert.php'
+def remoteLog(valueToLog):
+	
+	values = {'dataId' : 'waterMeter' }
+	values['value'] = str(valueToLog)
+
+	data = urllib.urlencode(values)
+	req = urllib2.Request(remote_log_url, data)
+	response = urllib2.urlopen(req)
+	result = response.read()
+	return result
+
 ###########################
 # PERSONAL CONFIG FILE READ
 ###########################
@@ -94,7 +109,14 @@ total_in_period = 0
 
 def log_value():
 	global total_in_period
+	
 	logger.info('nb liters in last period: %d' % total_in_period)
+	
+	res = remoteLog(total_in_period) 
+	
+	if not res=='\"insert OK\"':
+		logger.info('remote log FAILED, status=' + res)
+
 	total_in_period = 0
 
 logger.info("log period: %d seconds", LOG_PERIOD)
