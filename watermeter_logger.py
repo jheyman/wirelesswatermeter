@@ -111,9 +111,8 @@ current_val = 0
 def log_value():
 	global total_in_period
 	global current_val
-	global old_counter_value
 	
-	logger.info('nb liters in last period: %d (current=%d, old=%d)' % (total_in_period, current_val, old_counter_value))
+	logger.info('nb liters in last period: %d (current=%d)' % (total_in_period, current_val))
 
 	res = remoteLog(total_in_period) 
 	
