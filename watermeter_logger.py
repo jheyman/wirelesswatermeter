@@ -106,6 +106,7 @@ radio.startListening()
 
 old_counter_value = -1
 total_in_period = 0
+current_val = 0
 
 def log_value():
 	global total_in_period
@@ -113,7 +114,7 @@ def log_value():
 	global old_counter_value
 	
 	logger.info('nb liters in last period: %d (current=%d, old=%d)' % (total_in_period, current_val, old_counter_value))
-	
+
 	res = remoteLog(total_in_period) 
 	
 	if not res=='\"insert OK\"':
