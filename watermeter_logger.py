@@ -109,8 +109,10 @@ total_in_period = 0
 
 def log_value():
 	global total_in_period
+	global current_val
+	global old_counter_value
 	
-	logger.info('nb liters in last period: %d' % total_in_period)
+	logger.info('nb liters in last period: %d (current=%d, old=%d)' % (total_in_period, current_val, old_counter_value))
 	
 	res = remoteLog(total_in_period) 
 	
@@ -147,7 +149,6 @@ try:
 		    	delta = current_val - old_counter_value
 		    	if (delta > 1):
 		    		logger.info('MISSED tops (delta=%d)' % delta)
-		    	#logger.info('%d more liters' % delta)
 		    	total_in_period += delta
 		    	old_counter_value = current_val
 

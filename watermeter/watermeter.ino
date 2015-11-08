@@ -14,8 +14,7 @@ int previousvalue;
 #define SILVER 1
 int currentstate=SILVER;
 
-long nbTurns=0;
-//long sendIndex=0;
+unsigned long nbTurns=0;
 
 #define HIGH_THRESHOLD 60
 #define LOW_THRESHOLD  30
@@ -30,7 +29,6 @@ const uint64_t pipe = { 0xF0F0F0F0D2LL };
 char message[30];
 
 void setup() {
-  //Serial.begin(9600);
 
   //nRF24 configurations
   radio.begin();
@@ -45,20 +43,14 @@ void setup() {
  
 void loop(){
   value = analogRead(A0)/4;
-  //Serial.println(value);
   
   if ((currentstate == SILVER) && (value > HIGH_THRESHOLD) && (previousvalue > HIGH_THRESHOLD)) {
     currentstate = RED;
-    //Serial.println("HI DETECTION");
   }
   
   if((currentstate == RED) && (value < LOW_THRESHOLD) && (previousvalue < LOW_THRESHOLD))  {
     currentstate = SILVER;
-    // We just entered the silver zone
-    //Serial.println("LO DETECTION");
     nbTurns++;
-    //Serial.print("ONE MORE TURN: ");
-    //Serial.println(nbTurns);   
     
     // prepare data for sending as text
     sprintf(message, "water:top:%d", nbTurns);
@@ -68,16 +60,6 @@ void loop(){
     bool ok = radio.write(&message,strlen(message));
     radio.startListening(); 
   } 
-
-    // prepare data for sending as text
-    //sprintf(message, "value %d, idx %d", value, sendIndex);
-  
-    // send data over wireless link
-    //radio.stopListening();
-    //bool ok = radio.write(&message,strlen(message));
-    //radio.startListening(); 
-
-  //sendIndex++;
   
   // Loop at 10 Hz
   previousvalue = value;
