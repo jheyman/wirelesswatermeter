@@ -114,10 +114,11 @@ def log_value():
 	
 	logger.info('nb liters in last period: %d (current=%d)' % (total_in_period, current_val))
 
-	res = remoteLog(total_in_period) 
+	if total_in_period != 0:
+		res = remoteLog(total_in_period) 
 	
-	if not res=='\"insert OK\"':
-		logger.info('remote log FAILED, status=' + res)
+		if not res=='\"insert OK\"':
+			logger.info('remote log FAILED, status=' + res)
 
 	total_in_period = 0
 
@@ -140,7 +141,7 @@ try:
 	    sensor = params[0]
 	    message = params[1]
 	    value = params[2].strip('\x00')
-	    #logger.info('Received: %s' % params)
+	    logger.info('Received: %s' % params)
 	    if (sensor == "water" and message == "top"):
 		    current_val = int(value)
 		    if (old_counter_value == -1):
