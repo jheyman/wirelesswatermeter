@@ -18,17 +18,18 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import urllib
 import urllib2
 
-remote_log_url = 'http://192.168.0.13:8081/graphlist_insert.php'
 def remoteLog(valueToLog):
 	
-	values = {'dataId' : 'waterMeter' }
-	values['value'] = str(valueToLog)
+	data = 'homelogdata,graph=waterMeter value='+str(valueToLog)
 
-	data = urllib.urlencode(values)
-	req = urllib2.Request(remote_log_url, data)
+	req = urllib2.Request(REMOTELOG_URL, data)
+	req.add_header('Content-Length', '%d' % len(data))
+	req.add_header('Content-Type', 'application/octet-stream')	
 	response = urllib2.urlopen(req)
 	result = response.read()
-	return result
+
+	if not result=="":
+		logger.info('remote log FAILED, status=' + result)
 
 ###########################
 # PERSONAL CONFIG FILE READ
@@ -41,6 +42,9 @@ parser.read('watermeter_logger.ini')
 LOG_FILENAME = parser.get('config', 'log_filename')
 
 LOG_PERIOD = parser.getint('config', 'log_period')
+
+# remote logging URL
+REMOTELOG_URL = parser.get('config', 'remotelog_url')
 
 #################
 #  LOGGING SETUP
@@ -115,10 +119,7 @@ def log_value():
 	logger.info('nb liters in last period: %d (current=%d)' % (total_in_period, current_val))
 
 	if total_in_period != 0:
-		res = remoteLog(total_in_period) 
-	
-		if not res=='\"insert OK\"':
-			logger.info('remote log FAILED, status=' + res)
+		remoteLog(total_in_period) 
 
 	total_in_period = 0
 
