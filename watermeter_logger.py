@@ -10,6 +10,7 @@ import logging.handlers
 import sys
 import unicodedata
 import pytz
+import requests
 import RPi.GPIO as GPIO
 from datetime import datetime, timedelta
 from ConfigParser import SafeConfigParser
@@ -19,17 +20,22 @@ import urllib
 import urllib2
 
 def remoteLog(valueToLog):
-	
+	logger.info('Logging remotely...')
 	data = 'homelogdata,graph=waterMeter value='+str(valueToLog)
 
 	req = urllib2.Request(REMOTELOG_URL, data)
 	req.add_header('Content-Length', '%d' % len(data))
 	req.add_header('Content-Type', 'application/octet-stream')	
-	response = urllib2.urlopen(req)
-	result = response.read()
-
-	if not result=="":
-		logger.info('remote log FAILED, status=' + result)
+	
+	try:
+		response = urllib2.urlopen(req, timeout=5)
+	except urllib2.HTTPError, e:
+		logger.info('HTTPError: '+ str(e))
+	except urllib2.URLError as e:
+		logger.info('URLError: '+ str(e))
+	else:
+		result = response.read()
+		logger.info('successfully logged data (' + data + ') remotely')
 
 ###########################
 # PERSONAL CONFIG FILE READ
@@ -118,8 +124,8 @@ def log_value():
 	
 	logger.info('nb liters in last period: %d (current=%d)' % (total_in_period, current_val))
 
-	if total_in_period != 0:
-		remoteLog(total_in_period) 
+	#if total_in_period != 0:
+	remoteLog(total_in_period) 
 
 	total_in_period = 0
 
