@@ -124,8 +124,8 @@ def log_value():
 	
 	logger.info('nb liters in last period: %d (current=%d)' % (total_in_period, current_val))
 
-	#if total_in_period != 0:
-	remoteLog(total_in_period) 
+	if total_in_period != 0:
+		remoteLog(total_in_period) 
 
 	total_in_period = 0
 
