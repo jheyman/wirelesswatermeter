@@ -7,7 +7,7 @@ import time
 import os
 import logging
 import logging.handlers
-import sys
+import sys, traceback
 import unicodedata
 import pytz
 import requests
@@ -143,7 +143,6 @@ try:
 	    recv_buffer = []
 	    radio.read(recv_buffer)
 	    out = ''.join(chr(i) for i in recv_buffer)
-	    #print out
 	    params = out.split(":")
 	    sensor = params[0]
 	    message = params[1]
@@ -160,7 +159,12 @@ try:
 		    	total_in_period += delta
 		    	old_counter_value = current_val
 
-except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
+except:
+	logger.info("*****Exception in main loop******")
+	exc_type, exc_value, exc_traceback = sys.exc_info()
+	traceback.print_exception(exc_type, exc_value, exc_traceback,limit=2, file=sys.stdout)	
+	del exc_traceback
+	scheduler.shutdown()
 	logger.info('EXITING watermeter logger')
+
 
