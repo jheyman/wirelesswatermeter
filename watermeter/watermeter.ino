@@ -15,6 +15,7 @@ int previousvalue;
 int currentstate=SILVER;
 
 unsigned long nbTurns=0;
+unsigned long nbRead=0;
 
 #define HIGH_THRESHOLD 60
 #define LOW_THRESHOLD  30
@@ -64,4 +65,15 @@ void loop(){
   // Loop at 10 Hz
   previousvalue = value;
   delay(100);
+  nbRead++;
+  if ((nbRead % 300) == 0) {
+    // prepare data for sending as text
+    sprintf(message, "water:alive:%d", nbRead);
+  
+    // send data over wireless link
+    radio.stopListening();
+    bool ok = radio.write(&message,strlen(message));
+    radio.startListening();   
+  }
+  
 }

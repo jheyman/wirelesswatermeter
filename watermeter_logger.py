@@ -139,35 +139,35 @@ iter = 0
 
 try:
 	while True:
-	    pipe = [0]
-	    while not radio.available(pipe, True):
-		time.sleep(0.333)
-		iter = iter +1
-		if iter == 1000:
-			logger.info("still alive, listening...")
-			iter = 0
-	    recv_buffer = []
-	    radio.read(recv_buffer)
-	    out = ''.join(chr(i) for i in recv_buffer)
-	    logger.info('Received: %s' % out)
-	    params = out.split(":")
-	    if (len(params) == 3): #protection again corrupted/incomplete messages
-	    	sensor = params[0]
-	    	message = params[1]
-	    	value = params[2].strip('\x00')
-	    else:
-	    	continue
-	    
-	    if (sensor == "water" and message == "top"):
-		    current_val = int(value)
-		    if (old_counter_value == -1):
-		    	old_counter_value = current_val
-		    else:
-		    	delta = current_val - old_counter_value
-		    	if (delta > 1):
-		    		logger.info('MISSED tops (delta=%d)' % delta)
-		    	total_in_period += delta
-		    	old_counter_value = current_val
+		pipe = [0]
+		while not radio.available(pipe, True):
+			time.sleep(0.333)
+			iter = iter +1
+			if iter == 1000:
+				logger.info("still alive, listening...")
+				iter = 0
+		recv_buffer = []
+		radio.read(recv_buffer)
+		out = ''.join(chr(i) for i in recv_buffer)
+		logger.info('Received: %s' % out)
+		params = out.split(":")
+		if (len(params) == 3): #protection again corrupted/incomplete messages
+			sensor = params[0]
+			message = params[1]
+			value = params[2].strip('\x00')
+		else:
+			continue
+		
+		if (sensor == "water" and message == "top"):
+			current_val = int(value)
+			if (old_counter_value == -1):
+				old_counter_value = current_val
+			else:
+				delta = current_val - old_counter_value
+				if (delta > 1):
+					logger.info('MISSED tops (delta=%d)' % delta)
+				total_in_period += delta
+				old_counter_value = current_val
 except:
 	logger.info("*****Exception in main loop******")
 	exc_type, exc_value, exc_traceback = sys.exc_info()
