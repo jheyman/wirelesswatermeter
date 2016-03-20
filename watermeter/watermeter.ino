@@ -14,8 +14,8 @@ int previousvalue;
 #define SILVER 1
 int currentstate=SILVER;
 
-unsigned long nbTurns=0;
 unsigned long nbRead=0;
+unsigned long nbTurns=0;
 
 #define HIGH_THRESHOLD 60
 #define LOW_THRESHOLD  30
@@ -42,8 +42,16 @@ void setup() {
   radio.startListening();
 }
  
+void sendMessage() {
+    // send data over wireless link
+    radio.stopListening();
+    radio.write(&message,strlen(message));
+    radio.startListening(); 
+} 
+ 
 void loop(){
   value = analogRead(A0)/4;
+  nbRead++;
   
   if ((currentstate == SILVER) && (value > HIGH_THRESHOLD) && (previousvalue > HIGH_THRESHOLD)) {
     currentstate = RED;
@@ -52,28 +60,14 @@ void loop(){
   if((currentstate == RED) && (value < LOW_THRESHOLD) && (previousvalue < LOW_THRESHOLD))  {
     currentstate = SILVER;
     nbTurns++;
-    
-    // prepare data for sending as text
     sprintf(message, "water:top:%d", nbTurns);
-  
-    // send data over wireless link
-    radio.stopListening();
-    bool ok = radio.write(&message,strlen(message));
-    radio.startListening(); 
-  } 
+    sendMessage();  
+  } else if ((nbRead % 50) == 0) {
+    sprintf(message, "water:alive");
+    sendMessage(); 
+  }
   
   // Loop at 10 Hz
   previousvalue = value;
   delay(100);
-  nbRead++;
-  if ((nbRead % 300) == 0) {
-    // prepare data for sending as text
-    sprintf(message, "water:alive:%d", nbRead);
-  
-    // send data over wireless link
-    radio.stopListening();
-    bool ok = radio.write(&message,strlen(message));
-    radio.startListening();   
-  }
-  
 }
