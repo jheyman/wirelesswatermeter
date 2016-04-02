@@ -53,6 +53,10 @@ void loop(){
   value = analogRead(A0)/4;
   nbRead++;
   
+  // For debug / calibration
+  //sprintf(message, "val:%d", value);
+  //sendMessage();
+  
   if ((currentstate == SILVER) && (value > HIGH_THRESHOLD) && (previousvalue > HIGH_THRESHOLD)) {
     currentstate = RED;
   }
