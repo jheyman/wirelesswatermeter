@@ -148,7 +148,12 @@ try:
 				iter = 0
 		recv_buffer = []
 		radio.read(recv_buffer)
-		out = ''.join(chr(i) for i in recv_buffer)
+		out =''
+		for i in recv_buffer:
+			if (i != 0):
+				out += chr(i)
+			else:
+				out += "X"
 		logger.info('Received: %s' % out)
 		params = out.split(":")
 		if (len(params) == 3): #protection again corrupted/incomplete messages
