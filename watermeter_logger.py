@@ -159,7 +159,7 @@ try:
 		if (len(params) == 3): #protection again corrupted/incomplete messages
 			sensor = params[0]
 			message = params[1]
-			value = params[2].strip('\x00')
+			value = params[2].strip('X')
 		else:
 			continue
 		
